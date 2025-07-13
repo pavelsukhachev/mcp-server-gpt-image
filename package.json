@@ -6,11 +6,11 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/brisklad/mcp-server-gpt-image.git"
+    "url": "git+https://github.com/pavelsukhachev/mcp-server-gpt-image.git"
   },
-  "homepage": "https://github.com/brisklad/mcp-server-gpt-image#readme",
+  "homepage": "https://github.com/pavelsukhachev/mcp-server-gpt-image#readme",
   "bugs": {
-    "url": "https://github.com/brisklad/mcp-server-gpt-image/issues"
+    "url": "https://github.com/pavelsukhachev/mcp-server-gpt-image/issues"
   },
   "scripts": {
     "build": "tsc",
