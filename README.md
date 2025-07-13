@@ -26,12 +26,25 @@ A Model Context Protocol (MCP) server that provides access to OpenAI's GPT Image
 
 ### Installation
 
+#### Option 1: Use Pre-built Version (Recommended)
+
 ```bash
 # Clone the repository
-git clone https://github.com/brisklad/mcp-server-gpt-image.git
+git clone https://github.com/pavelsukhachev/mcp-server-gpt-image.git
 cd mcp-server-gpt-image
 
-# Install dependencies
+# Install dependencies (required for runtime)
+npm install --production
+```
+
+#### Option 2: Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/pavelsukhachev/mcp-server-gpt-image.git
+cd mcp-server-gpt-image
+
+# Install all dependencies
 npm install
 
 # Build the project
@@ -236,4 +249,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Note**: This is an unofficial implementation. GPT Image-1 is a product of OpenAI.test: CI trigger
+**Note**: This is an unofficial implementation. GPT Image-1 is a product of OpenAI.
