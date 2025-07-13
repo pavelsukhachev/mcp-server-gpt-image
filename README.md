@@ -14,6 +14,7 @@ A Model Context Protocol (MCP) server that provides access to OpenAI's GPT Image
 - **🚀 Production Ready**: Docker support, session management, and comprehensive error handling
 - **🔒 Secure**: API key authentication via environment variables
 - **📊 Flexible Options**: Support for various sizes, quality levels, and output formats
+- **⚡ Streaming Ready**: Infrastructure supports streaming (requires Responses API integration)
 
 ## 📋 Prerequisites
 
@@ -178,6 +179,20 @@ src/
     └── http.ts           # HTTP/Streamable transport implementation
 ```
 
+## 📝 Implementation Notes
+
+### Current Status
+This server currently uses the **Images API** endpoint for maximum compatibility. The Responses API integration is planned for a future release to enable:
+- Real-time streaming with partial image previews
+- Multi-turn conversations for iterative editing
+- Better integration with reasoning models
+
+### Why Images API First?
+- Simpler implementation for initial release
+- Better stability and reliability
+- Compatible with existing OpenAI client libraries
+- Easier debugging and error handling
+
 ## 💰 Cost Considerations
 
 GPT Image-1 generates images by producing specialized image tokens. Cost and latency depend on:
@@ -204,6 +219,28 @@ GPT Image-1 generates images by producing specialized image tokens. Cost and lat
    - All inputs are validated using Zod schemas
    - File size limits are enforced
    - Content moderation is applied by default
+
+## 🚀 Performance Tips
+
+### Optimize Generation Speed
+- **Use Lower Quality**: Start with `quality: "low"` for drafts, then regenerate with higher quality
+- **Smaller Sizes**: 1024x1024 generates faster than larger sizes
+- **Simpler Prompts**: Break complex scenes into multiple simpler requests
+
+### Reduce Costs
+- **Cache Results**: Store generated images locally to avoid regenerating
+- **Batch Similar Requests**: Generate variations in a single API call with `n` parameter
+- **Monitor Token Usage**: Track image token consumption (see Cost Considerations)
+
+### Improve Quality
+- **Detailed Prompts**: Include style, mood, lighting, and perspective details
+- **Reference Styles**: Mention specific art styles or artists for consistency
+- **Iterative Refinement**: Use edit_image tool to refine specific areas
+
+### Handle Rate Limits
+- **Implement Retries**: Add exponential backoff for rate limit errors
+- **Queue Requests**: Use a job queue for batch processing
+- **Monitor Usage**: Track API calls to stay within limits
 
 ## 🤝 Contributing
 
@@ -233,19 +270,48 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ⚠️ Known Limitations
 
-- GPT Image-1 may take up to 2 minutes for complex prompts
-- Text rendering in images may not always be precise
-- Mask-based editing follows guidance but may not match exact shapes
-- Streaming image generation is not yet available via the Responses API
+### API Limitations
+- **Generation Time**: Complex prompts may take up to 2 minutes to process
+- **Text Rendering**: Generated text in images may have inconsistencies in spelling or alignment
+- **Response Format**: Currently returns base64 images only (no URL support)
+- **Model Support**: Streaming via Responses API requires using the Responses endpoint (not Images API)
+
+### Technical Limitations
+- **Mask Precision**: Inpainting masks are interpreted as guidance rather than exact boundaries
+- **File Size**: Large base64 responses may impact performance with multiple images
+- **Concurrent Requests**: OpenAI rate limits apply per API key
+- **Model Access**: Requires API Organization Verification for GPT Image-1
 
 ## 🚧 Roadmap
 
-- [ ] Support for streaming image generation when available
-- [ ] Multi-turn image editing conversations
-- [ ] Batch image processing
-- [ ] WebSocket transport support
-- [ ] Built-in image optimization
-- [ ] Usage analytics and monitoring
+### Short Term (Q1 2025)
+- [x] ~~Basic image generation and editing~~ ✅
+- [x] ~~Docker support~~ ✅
+- [x] ~~Pre-built distribution~~ ✅
+- [ ] **Responses API Integration** - Switch from Images API to Responses API for streaming support
+- [ ] **Partial Image Streaming** - Implement `partial_images` parameter (1-3 previews during generation)
+- [ ] **Response Caching** - Cache generated images to reduce API calls
+- [ ] **Image Optimization** - Automatic compression and format conversion
+
+### Medium Term (Q2 2025)
+- [ ] **Multi-turn Editing** - Maintain conversation context for iterative image refinement
+- [ ] **Batch Processing** - Generate multiple images with queue management
+- [ ] **WebSocket Transport** - Real-time bidirectional communication
+- [ ] **File Upload Support** - Direct image file handling without base64 encoding
+- [ ] **Custom Prompts Library** - Pre-defined prompt templates for common use cases
+
+### Long Term (2025+)
+- [ ] **Usage Analytics** - Track generation metrics and costs
+- [ ] **Web Dashboard** - Visual interface for server management
+- [ ] **Plugin System** - Extensible architecture for custom processors
+- [ ] **Multi-model Support** - Integration with DALL-E 3 and future models
+- [ ] **Advanced Editing** - Style transfer, outpainting, and variation generation
+
+### Community Requested
+- [ ] **npm Package** - Publish to npm registry for easier installation
+- [ ] **Homebrew Formula** - One-command installation on macOS
+- [ ] **GUI Client** - Standalone desktop application
+- [ ] **Prompt Engineering Guide** - Best practices documentation
 
 ---
 
