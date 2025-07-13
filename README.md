@@ -596,7 +596,6 @@ GPT Image-1 generates images by producing specialized image tokens. Cost and lat
 - [ ] Usage analytics and cost tracking
 - [ ] Web dashboard for server management
 - [ ] Plugin system for custom processors
-- [ ] Multi-model support (DALL-E 3 integration)
 
 ## ⚠️ Known Limitations
 
