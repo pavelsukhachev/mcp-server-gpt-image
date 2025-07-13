@@ -236,4 +236,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Note**: This is an unofficial implementation. GPT Image-1 is a product of OpenAI.
+**Note**: This is an unofficial implementation. GPT Image-1 is a product of OpenAI.test: CI trigger
