@@ -1,6 +1,6 @@
 # MCP Server GPT Image - Examples
 
-This directory contains examples for using the MCP Server GPT Image with various clients.
+This directory contains examples for using the MCP Server GPT Image with various clients, including streaming, caching, and optimization features.
 
 ## Claude Desktop Configuration
 
@@ -33,7 +33,10 @@ The simplest configuration for Claude Desktop:
       "env": {
         "OPENAI_API_KEY": "your-openai-api-key-here",
         "NODE_ENV": "production",
-        "LOG_LEVEL": "info"
+        "LOG_LEVEL": "info",
+        "CACHE_DIR": ".cache/images",
+        "CACHE_TTL": "3600",
+        "CACHE_MAX_SIZE": "100"
       }
     }
   }
@@ -140,6 +143,60 @@ curl -X POST http://localhost:3000/mcp \
     "id": 3
   }'
 ```
+
+#### Generate an Image with Streaming
+
+```bash
+curl -X POST http://localhost:3000/mcp/stream \
+  -H "Content-Type: application/json" \
+  -H "X-Session-ID: my-session-123" \
+  -N \
+  -d '{
+    "prompt": "A futuristic city with flying cars",
+    "size": "1024x1024",
+    "quality": "high",
+    "partialImages": 3,
+    "format": "jpeg",
+    "output_compression": 85
+  }'
+```
+
+## Example Files
+
+This directory includes several complete examples:
+
+### 1. `test-client.ts` - Basic MCP Client
+A simple example showing how to connect to the MCP server and generate images.
+
+```bash
+npx tsx examples/test-client.ts
+```
+
+### 2. `streaming-client.ts` - Streaming with SSE
+Demonstrates real-time image generation with progress updates and partial previews.
+
+```bash
+npx tsx examples/streaming-client.ts
+```
+
+Features:
+- Real-time progress tracking
+- Partial image previews
+- Error handling
+- Multiple streaming examples
+
+### 3. `optimization-demo.ts` - Image Optimization
+Shows different optimization strategies for various use cases.
+
+```bash
+npx tsx examples/optimization-demo.ts
+```
+
+Features:
+- JPEG optimization for photos
+- WebP for best compression
+- PNG with transparency
+- Cache performance testing
 
 ## JavaScript/TypeScript Client Example
 

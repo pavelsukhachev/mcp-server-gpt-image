@@ -1,7 +1,7 @@
 {
   "name": "mcp-server-gpt-image",
-  "version": "1.0.0",
-  "description": "Model Context Protocol server for OpenAI GPT Image-1 - Advanced image generation and editing",
+  "version": "1.1.0",
+  "description": "MCP server for OpenAI GPT Image-1 with real-time streaming, intelligent caching, and automatic image optimization",
   "main": "dist/index.js",
   "type": "module",
   "repository": {
@@ -27,25 +27,32 @@
     "openai",
     "gpt-image-1",
     "image-generation",
-    "model-context-protocol"
+    "model-context-protocol",
+    "streaming",
+    "sse",
+    "image-optimization",
+    "caching",
+    "server-sent-events"
   ],
   "author": "Pavel Sukhachev",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.6",
+    "@types/sharp": "^0.31.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "openai": "^4.76.5",
-    "dotenv": "^16.4.5",
-    "cors": "^2.8.5",
+    "sharp": "^0.34.3",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.2.1",
+    "@types/cors": "^2.8.18",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
-    "@types/cors": "^2.8.18",
-    "typescript": "^5.7.3",
-    "tsx": "^4.19.2",
     "rimraf": "^6.0.1",
-    "@modelcontextprotocol/inspector": "^0.2.1"
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   }
 }
