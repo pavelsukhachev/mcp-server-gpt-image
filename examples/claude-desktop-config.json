@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gpt-image-1": {
+      "command": "node",
+      "args": ["./dist/index.js", "stdio"],
+      "cwd": "/Users/brisklad/dev/gpt-image-1-mcp-sse",
+      "env": {
+        "OPENAI_API_KEY": "your-openai-api-key-here"
+      }
+    }
+  }
+}

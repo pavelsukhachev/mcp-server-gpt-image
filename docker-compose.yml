@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  gpt-image-mcp:
+    build: .
+    container_name: gpt-image-1-mcp-server
+    ports:
+      - "3000:3000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PORT=3000
+      - CORS_ORIGIN=*
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    volumes:
+      # Mount for generated images (optional)
+      - ./generated-images:/app/generated-images
+    networks:
+      - mcp-network
+
+  # Optional: MCP test client service
+  test-client:
+    build: .
+    container_name: gpt-image-mcp-test-client
+    command: ["node", "dist/examples/test-client.js"]
+    depends_on:
+      gpt-image-mcp:
+        condition: service_healthy
+    environment:
+      - MCP_SERVER_URL=http://gpt-image-mcp:3000/mcp
+    volumes:
+      - ./examples/output:/app/examples/output
+    networks:
+      - mcp-network
+    profiles:
+      - test
+
+networks:
+  mcp-network:
+    driver: bridge

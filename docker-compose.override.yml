@@ -1,0 +1,14 @@
+# Override for development - uses .env file
+version: '3.8'
+
+services:
+  gpt-image-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src:ro
+      - ./dist:/app/dist:rw
+    environment:
+      - NODE_ENV=development
