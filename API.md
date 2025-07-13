@@ -4,6 +4,8 @@
 
 The MCP Server GPT Image-1 provides multiple endpoints for image generation and management. The server supports both MCP protocol communication and direct HTTP/SSE streaming.
 
+> **Note**: The internal architecture follows SOLID principles with dependency injection. For implementation details, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Base URL
 
 ```

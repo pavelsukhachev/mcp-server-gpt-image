@@ -10,6 +10,9 @@ export const ImageGenerationSchema = z.object({
     n: z.number().min(1).max(4).optional().default(1).describe('Number of images to generate'),
     partialImages: z.number().min(1).max(3).optional().describe('Number of partial images to stream (enables streaming)'),
     stream: z.boolean().optional().default(false).describe('Enable streaming mode for image generation'),
+    conversationId: z.string().optional().describe('ID for conversation context tracking'),
+    useContext: z.boolean().optional().default(false).describe('Whether to use conversation context from previous interactions'),
+    maxContextEntries: z.number().min(1).max(10).optional().default(5).describe('Maximum number of context entries to consider'),
 });
 export const ImageEditSchema = z.object({
     prompt: z.string().describe('The text prompt for editing the image'),
@@ -22,5 +25,8 @@ export const ImageEditSchema = z.object({
     output_compression: z.number().min(0).max(100).optional(),
     moderation: z.enum(['auto', 'low']).optional().default('auto'),
     n: z.number().min(1).max(4).optional().default(1),
+    conversationId: z.string().optional().describe('ID for conversation context tracking'),
+    useContext: z.boolean().optional().default(false).describe('Whether to use conversation context from previous interactions'),
+    maxContextEntries: z.number().min(1).max(10).optional().default(5).describe('Maximum number of context entries to consider'),
 });
 //# sourceMappingURL=types.js.map

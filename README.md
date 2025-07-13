@@ -4,12 +4,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP Version](https://img.shields.io/badge/MCP-1.0.6-blue)](https://modelcontextprotocol.io)
 
-A Model Context Protocol (MCP) server that provides access to OpenAI's GPT Image-1 model for advanced image generation and editing capabilities. This server enables AI assistants like Claude to generate and manipulate images using natural language prompts.
+A Model Context Protocol (MCP) server that provides access to OpenAI's latest image generation capabilities using both the GPT Image-1 model and the new Responses API. This server enables AI assistants like Claude to generate and manipulate images using natural language prompts with cutting-edge multimodal AI technology.
 
 ## 🌟 Features
 
-- **🎨 Image Generation**: Create stunning images from text descriptions using GPT Image-1
-- **✏️ Image Editing**: Modify existing images with text prompts and optional masks
+- **🎨 Latest Image Generation**: Create stunning images using OpenAI's GPT Image-1 (2025's state-of-the-art model)
+- **🆕 Dual API Support**: Choose between Images API (gpt-image-1) and Responses API (gpt-4o with image tools)
+- **✏️ Advanced Image Editing**: Modify existing images with text prompts and optional masks
 - **🔄 Multiple Transports**: Supports both stdio (for Claude Desktop) and HTTP (for remote access)
 - **⚡ Real-time Streaming**: Server-Sent Events (SSE) for live progress updates and partial previews
 - **💾 Smart Caching**: Two-tier caching system (memory + disk) for instant repeated requests
@@ -17,13 +18,15 @@ A Model Context Protocol (MCP) server that provides access to OpenAI's GPT Image
 - **🚀 Production Ready**: Docker support, session management, and comprehensive error handling
 - **🔒 Secure**: API key authentication via environment variables
 - **📊 Flexible Options**: Support for various sizes, quality levels, and output formats
+- **🔄 Conversation Context**: Multi-turn image editing with conversation history tracking
+- **🎯 Superior Text Rendering**: GPT Image-1's enhanced text-in-image capabilities
 
 ## 📋 Prerequisites
 
 - Node.js 18 or higher
 - npm or yarn
-- OpenAI API key with access to GPT Image-1 model
-- [API Organization Verification](https://help.openai.com/en/articles/10910291-api-organization-verification) completed for GPT Image-1 access
+- OpenAI API key with access to image generation models
+- [API Organization Verification](https://help.openai.com/en/articles/10910291-api-organization-verification) completed for image generation access
 
 ## 🚀 Quick Start
 
@@ -62,6 +65,10 @@ Create a `.env` file in the root directory:
 # Required
 OPENAI_API_KEY=your-openai-api-key-here
 
+# API Configuration
+API_MODE=responses                   # 'responses' (default, latest) or 'images' (legacy)
+RESPONSES_MODEL=gpt-4o              # Model for Responses API (default: gpt-4o)
+
 # Optional
 PORT=3000
 CORS_ORIGIN=*
@@ -70,7 +77,48 @@ CORS_ORIGIN=*
 CACHE_DIR=.cache/images
 CACHE_TTL=3600
 CACHE_MAX_SIZE=100
+
+# Feature Flags
+ENABLE_CONVERSATION_CONTEXT=true    # Multi-turn conversation support
+ENABLE_STREAMING=true               # Real-time streaming updates
+ENABLE_OPTIMIZATION=true            # Image optimization
 ```
+
+## 🎯 API Modes & Model Selection
+
+### Responses API (Recommended)
+**Default Mode**: `API_MODE=responses`
+
+- **Model**: gpt-4o with image_generation tool
+- **Technology**: Latest 2025 Responses API with integrated GPT Image-1 capabilities
+- **Features**: 
+  - Native multimodal understanding
+  - Better context awareness
+  - Enhanced prompt following
+  - Superior text rendering in images
+  - Real-time streaming with partial previews
+  - Multi-turn conversation support
+
+### Images API (Legacy)
+**Legacy Mode**: `API_MODE=images`
+
+- **Model**: gpt-image-1 (dedicated image model)
+- **Technology**: Traditional Images API endpoint
+- **Features**:
+  - Direct access to GPT Image-1 model
+  - Simple, focused image generation
+  - Backward compatibility
+
+### Model Comparison
+
+| Feature | Responses API (gpt-4o) | Images API (gpt-image-1) |
+|---------|------------------------|---------------------------|
+| **Latest Technology** | ✅ 2025 Responses API | ⚠️ Legacy API |
+| **Text in Images** | ✅ Superior | ✅ Good |
+| **Context Awareness** | ✅ Excellent | ⚠️ Limited |
+| **Streaming** | ✅ Partial previews | ⚠️ Final only |
+| **Multi-turn** | ✅ Full support | ⚠️ Basic |
+| **Performance** | ✅ Optimized | ✅ Fast |
 
 ## 🔧 Usage
 
@@ -131,6 +179,9 @@ Generate images from text prompts with optional streaming support.
 - `n`: Number of images to generate (1-4)
 - `partialImages`: Number of partial images to stream (1-3, enables streaming)
 - `stream`: Enable streaming mode for real-time generation updates
+- `conversationId`: ID for conversation context tracking (optional)
+- `useContext`: Whether to use conversation context from previous interactions (default: false)
+- `maxContextEntries`: Maximum number of context entries to consider (1-10, default: 5)
 
 **Example:**
 ```javascript
@@ -163,6 +214,10 @@ Edit existing images using text prompts and optional masks.
 }
 ```
 
+**API Mode Support:**
+- **Responses API**: Editing via conversation with image input (recommended)
+- **Images API**: Direct image editing using traditional endpoint
+
 ### 3. `clear_cache`
 
 Clear all cached images from memory and disk.
@@ -181,6 +236,44 @@ Get cache statistics including memory entries and disk usage.
 ```javascript
 // No parameters required
 {}
+```
+
+### 5. `list_conversations`
+
+List all active conversation IDs.
+
+**Example:**
+```javascript
+// No parameters required
+{}
+```
+
+### 6. `get_conversation`
+
+Get the full history of a specific conversation.
+
+**Parameters:**
+- `conversationId` (required): The conversation ID to retrieve
+
+**Example:**
+```javascript
+{
+  "conversationId": "design-session-123"
+}
+```
+
+### 7. `clear_conversation`
+
+Clear the history of a specific conversation.
+
+**Parameters:**
+- `conversationId` (required): The conversation ID to clear
+
+**Example:**
+```javascript
+{
+  "conversationId": "design-session-123"
+}
 ```
 
 ## 🌊 Streaming Image Generation
@@ -209,14 +302,38 @@ The server supports streaming image generation via Server-Sent Events (SSE) for 
 - `complete`: Final image with revised prompt
 - `error`: Error information if generation fails
 
-**Example Client**:
+### API Mode Examples
+
+**Responses API Streaming** (Recommended):
 ```typescript
+// Using Responses API with gpt-4o
 const response = await fetch('http://localhost:3000/mcp/stream', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ prompt: 'A futuristic city', partialImages: 3 })
+  body: JSON.stringify({ 
+    prompt: 'A futuristic city with flying cars',
+    partialImages: 2,
+    apiMode: 'responses'  // Use latest Responses API
+  })
 });
+```
 
+**Images API Streaming** (Legacy):
+```typescript
+// Using traditional Images API with gpt-image-1
+const response = await fetch('http://localhost:3000/mcp/stream', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ 
+    prompt: 'A futuristic city with flying cars',
+    partialImages: 2,
+    apiMode: 'images'  // Use legacy Images API
+  })
+});
+```
+
+**Example Client**:
+```typescript
 const reader = response.body.getReader();
 const decoder = new TextDecoder();
 
@@ -237,6 +354,55 @@ while (true) {
 ```
 
 See `examples/streaming-client.ts` for a complete implementation.
+
+## 🔄 Multi-turn Conversation Context
+
+### Iterative Image Refinement
+
+The server now supports maintaining conversation context across multiple image generation and editing operations. This allows for iterative refinement where each new prompt can build upon previous results.
+
+**How it works**:
+1. Assign a `conversationId` to group related operations
+2. Enable `useContext: true` to enhance prompts with previous context
+3. The system automatically tracks prompts, revised prompts, and image metadata
+4. Context is persisted to disk for resuming sessions later
+
+**Example Workflow**:
+```javascript
+// Initial generation
+{
+  "prompt": "Create a serene mountain landscape",
+  "conversationId": "landscape-design-001",
+  "useContext": false  // First prompt doesn't need context
+}
+
+// Iterative refinement with context
+{
+  "prompt": "Add a crystal clear lake in the foreground",
+  "conversationId": "landscape-design-001",
+  "useContext": true,  // Will consider previous "mountain landscape" context
+  "maxContextEntries": 5
+}
+
+// Further editing
+{
+  "prompt": "Make the sky more dramatic with sunset colors",
+  "images": ["previous_generated_image_base64..."],
+  "conversationId": "landscape-design-001",
+  "useContext": true  // Considers both previous prompts for consistency
+}
+```
+
+**Benefits**:
+- **Consistency**: Maintains style and elements across iterations
+- **Context Awareness**: Each generation considers previous prompts and results
+- **Session Persistence**: Resume work later with full context preserved
+- **Flexible History**: Control how much context to use with `maxContextEntries`
+
+**Managing Conversations**:
+- Use `list_conversations` to see all active sessions
+- Use `get_conversation` to review the full history of a session
+- Use `clear_conversation` to start fresh when needed
 
 ## 💾 Response Caching
 
@@ -308,20 +474,40 @@ The included `docker-compose.yml` provides:
 
 ## 🏗️ Architecture
 
+The codebase follows **SOLID principles** and **clean architecture** patterns for maintainability and testability.
+
 ```
 src/
-├── index.ts              # Entry point with transport selection
-├── server.ts             # MCP server setup and tool registration
-├── types.ts              # TypeScript interfaces and Zod schemas
+├── index.ts                  # Entry point with transport selection
+├── server.ts                 # MCP server setup and tool registration
+├── types.ts                  # TypeScript interfaces and Zod schemas
+├── interfaces/               # Contract definitions (Dependency Inversion)
+│   └── image-generation.interface.ts  # Core interfaces for DI
+├── services/                 # Business logic (Single Responsibility)
+│   ├── image-generator.ts    # Main image generation service
+│   ├── streaming-image-generator.ts  # Streaming implementation
+│   ├── file-converter.ts     # File conversion utilities
+│   └── openai-client-adapter.ts     # OpenAI API adapter
+├── adapters/                 # Interface adapters (Open/Closed)
+│   ├── cache-adapter.ts      # Cache interface implementation
+│   └── optimizer-adapter.ts  # Image optimizer interface
 ├── tools/
-│   ├── image-generation.ts          # Core OpenAI API integration
-│   └── image-generation-streaming.ts # Streaming support implementation
+│   ├── image-generation.ts   # Tool endpoints using services
+│   └── image-generation-streaming.ts # Streaming endpoints
 ├── transport/
-│   └── http.ts           # HTTP/SSE transport with session management
+│   └── http.ts               # HTTP/SSE transport with session management
 └── utils/
-    ├── cache.ts          # Two-tier caching system
-    └── image-optimizer.ts # Sharp-based image optimization
+    ├── cache.ts              # Two-tier caching system
+    └── image-optimizer.ts    # Sharp-based image optimization
 ```
+
+### Key Design Patterns
+
+- **Dependency Injection**: All services depend on interfaces, not concrete implementations
+- **Single Responsibility**: Each class has one clear purpose
+- **Open/Closed Principle**: Services are extensible through interfaces
+- **Interface Segregation**: Focused interfaces for specific concerns
+- **Liskov Substitution**: All implementations are interchangeable
 
 ## 📝 Examples
 
@@ -392,10 +578,15 @@ GPT Image-1 generates images by producing specialized image tokens. Cost and lat
 - [x] Partial Image Simulation (1-3 previews)
 - [x] Response Caching (memory + disk)
 - [x] Image Optimization (format conversion & compression)
+- [x] SOLID principles architecture refactoring
+- [x] Comprehensive test suite with 90+ tests
+- [x] Test coverage reporting (98%+ for core utilities)
+- [x] TDD (Test-Driven Development) practices
+- [x] Multi-turn editing with conversation context
+- [x] OpenAI Responses API integration with GPT-4o + image_generation tool
+- [x] Dual API support (Images API + Responses API) with seamless switching
 
 ### In Progress 🚀
-- [ ] Native Responses API integration (when available)
-- [ ] Multi-turn editing with conversation context
 - [ ] Batch processing with queue management
 
 ### Future Plans 📅
@@ -420,15 +611,57 @@ GPT Image-1 generates images by producing specialized image tokens. Cost and lat
 - **Concurrent Requests**: Rate limited by OpenAI API quotas
 - **Cache Size**: Limited by available disk space
 
+## 🧪 Testing
+
+The project uses **Vitest** for testing with comprehensive coverage:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run specific test file
+npm test -- src/utils/cache.test.ts
+```
+
+### Test Coverage
+- **Overall**: ~50% statements
+- **Core Services**: 78.91% coverage
+- **Utilities**: 98.88% coverage (Cache: 100%, ImageOptimizer: 97.69%)
+- **Server**: 96.08% coverage
+
+### Testing Approach
+- **Unit Tests**: Comprehensive tests for all services and utilities
+- **Integration Tests**: MCP server endpoint testing
+- **TDD Practice**: Write tests first, then implementation
+- **Mocking**: Proper dependency mocking for isolated testing
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please follow our development practices:
 
+### Development Process
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. **Write tests first** (TDD approach)
+4. Implement your feature following SOLID principles
+5. Ensure all tests pass (`npm test`)
+6. Check test coverage (`npm run test:coverage`)
+7. Commit your changes (`git commit -m 'Add some amazing feature'`)
+8. Push to the branch (`git push origin feature/amazing-feature`)
+9. Open a Pull Request
+
+### Code Standards
+- Follow TypeScript best practices
+- Maintain test coverage above 80%
+- Use dependency injection for new services
+- Follow existing code patterns and conventions
+- Document complex logic with clear comments
 
 ## 📝 License
 
