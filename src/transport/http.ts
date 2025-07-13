@@ -78,6 +78,58 @@ export function createHTTPServer(port: number = 3000) {
     }
   });
 
+  // Streaming image generation endpoint
+  app.post('/mcp/stream', async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || generateSessionId();
+      
+      // Set SSE headers
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Session-ID', sessionId);
+      
+      // Import streaming function dynamically
+      const { generateImageWithStreaming } = await import('../tools/image-generation-streaming.js');
+      
+      // Parse request body
+      const input = req.body;
+      
+      // Stream events
+      for await (const event of generateImageWithStreaming(input)) {
+        const data = JSON.stringify(event);
+        res.write(`data: ${data}\n\n`);
+        
+        // Send keep-alive comment every few events
+        res.write(': keep-alive\n\n');
+      }
+      
+      // Send done event
+      res.write('data: [DONE]\n\n');
+      res.end();
+      
+    } catch (error) {
+      console.error('Streaming error:', error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: {
+            code: 'streaming_error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+          },
+        });
+      } else {
+        // If headers already sent, send error as SSE event
+        const errorEvent = {
+          type: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+        res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
+        res.end();
+      }
+    }
+  });
+
   // Session cleanup endpoint
   app.delete('/mcp/session/:sessionId', (req: Request, res: Response) => {
     const { sessionId } = req.params as { sessionId: string };
@@ -95,6 +147,7 @@ export function createHTTPServer(port: number = 3000) {
     console.log(`GPT Image-1 MCP Server running on http://localhost:${port}`);
     console.log(`Health check: http://localhost:${port}/health`);
     console.log(`MCP endpoint: http://localhost:${port}/mcp`);
+    console.log(`Streaming endpoint: http://localhost:${port}/mcp/stream`);
   });
 
   // Cleanup on shutdown

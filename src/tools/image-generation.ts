@@ -1,5 +1,7 @@
 import OpenAI from 'openai';
 import { ImageGenerationInput, ImageEditInput, ImageGenerationResult } from '../types.js';
+import { imageCache } from '../utils/cache.js';
+import { ImageOptimizer } from '../utils/image-optimizer.js';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,6 +9,12 @@ const openai = new OpenAI({
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationResult> {
   try {
+    // Check cache first
+    const cached = await imageCache.get('generate', input);
+    if (cached) {
+      return cached;
+    }
+
     // For now, we'll use the Images API endpoint
     // Note: When Responses API support is available, we'll update this
     const response = await openai.images.generate({
@@ -28,10 +36,29 @@ export async function generateImage(input: ImageGenerationInput): Promise<ImageG
       throw new Error('Invalid response format');
     }) || [];
     
-    return {
-      images,
+    // Optimize images if requested
+    let optimizedImages = images;
+    if (input.output_compression !== undefined || input.format !== 'png') {
+      optimizedImages = await ImageOptimizer.optimizeBatch(images, input);
+      
+      // Log optimization results
+      for (let i = 0; i < images.length; i++) {
+        const reduction = await ImageOptimizer.calculateSizeReduction(images[i]!, optimizedImages[i]!);
+        if (reduction > 0) {
+          console.log(`Image ${i + 1} optimized: ${reduction}% size reduction`);
+        }
+      }
+    }
+
+    const result = {
+      images: optimizedImages,
       revised_prompt: response.data?.[0]?.revised_prompt,
     };
+
+    // Cache the result
+    await imageCache.set('generate', input, result);
+
+    return result;
   } catch (error) {
     if (error instanceof OpenAI.APIError) {
       throw new Error(`OpenAI API error: ${error.message}`);
@@ -42,6 +69,12 @@ export async function generateImage(input: ImageGenerationInput): Promise<ImageG
 
 export async function editImage(input: ImageEditInput): Promise<ImageGenerationResult> {
   try {
+    // Check cache first
+    const cached = await imageCache.get('edit', input);
+    if (cached) {
+      return cached;
+    }
+
     // Convert base64 images to File objects if needed
     const imageFiles = input.images.map((image, index) => {
       if (image.startsWith('data:')) {
@@ -86,10 +119,29 @@ export async function editImage(input: ImageEditInput): Promise<ImageGenerationR
       throw new Error('Invalid response format');
     }) || [];
     
-    return {
-      images,
+    // Optimize images if requested
+    let optimizedImages = images;
+    if (input.output_compression !== undefined || input.format !== 'png') {
+      optimizedImages = await ImageOptimizer.optimizeBatch(images, input);
+      
+      // Log optimization results
+      for (let i = 0; i < images.length; i++) {
+        const reduction = await ImageOptimizer.calculateSizeReduction(images[i]!, optimizedImages[i]!);
+        if (reduction > 0) {
+          console.log(`Edited image ${i + 1} optimized: ${reduction}% size reduction`);
+        }
+      }
+    }
+
+    const result = {
+      images: optimizedImages,
       revised_prompt: response.data?.[0]?.revised_prompt,
     };
+
+    // Cache the result
+    await imageCache.set('edit', input, result);
+
+    return result;
   } catch (error) {
     if (error instanceof OpenAI.APIError) {
       throw new Error(`OpenAI API error: ${error.message}`);

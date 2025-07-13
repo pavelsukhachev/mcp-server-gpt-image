@@ -9,7 +9,8 @@ export const ImageGenerationSchema = z.object({
   output_compression: z.number().min(0).max(100).optional().describe('Compression level for jpeg/webp (0-100%)'),
   moderation: z.enum(['auto', 'low']).optional().default('auto').describe('Content moderation strictness'),
   n: z.number().min(1).max(4).optional().default(1).describe('Number of images to generate'),
-  partial_images: z.number().min(1).max(3).optional().describe('Number of partial images to stream (enables streaming)'),
+  partialImages: z.number().min(1).max(3).optional().describe('Number of partial images to stream (enables streaming)'),
+  stream: z.boolean().optional().default(false).describe('Enable streaming mode for image generation'),
 });
 
 export type ImageGenerationInput = z.infer<typeof ImageGenerationSchema>;

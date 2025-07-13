@@ -8,7 +8,8 @@ export declare const ImageGenerationSchema: z.ZodObject<{
     output_compression: z.ZodOptional<z.ZodNumber>;
     moderation: z.ZodDefault<z.ZodOptional<z.ZodEnum<["auto", "low"]>>>;
     n: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
-    partial_images: z.ZodOptional<z.ZodNumber>;
+    partialImages: z.ZodOptional<z.ZodNumber>;
+    stream: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
 }, "strip", z.ZodTypeAny, {
     prompt: string;
     size: "1024x1024" | "1024x1536" | "1536x1024" | "auto";
@@ -17,8 +18,9 @@ export declare const ImageGenerationSchema: z.ZodObject<{
     background: "auto" | "transparent" | "opaque";
     moderation: "auto" | "low";
     n: number;
+    stream: boolean;
     output_compression?: number | undefined;
-    partial_images?: number | undefined;
+    partialImages?: number | undefined;
 }, {
     prompt: string;
     size?: "1024x1024" | "1024x1536" | "1536x1024" | "auto" | undefined;
@@ -28,7 +30,8 @@ export declare const ImageGenerationSchema: z.ZodObject<{
     output_compression?: number | undefined;
     moderation?: "auto" | "low" | undefined;
     n?: number | undefined;
-    partial_images?: number | undefined;
+    partialImages?: number | undefined;
+    stream?: boolean | undefined;
 }>;
 export type ImageGenerationInput = z.infer<typeof ImageGenerationSchema>;
 export declare const ImageEditSchema: z.ZodObject<{
